@@ -22,7 +22,7 @@ A Java-based database backup and restore utility that supports both MongoDB and 
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/DatabaseCloner.git
+   git clone https://github.com/NotMRGH/DatabaseCloner.git
    cd DatabaseCloner
    ```
 
