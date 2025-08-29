@@ -129,7 +129,60 @@ Example:
 
 ## Configuration
 
-The application is configured using command-line inputs. For automated backups, you can create a shell script to run the application with predefined parameters.
+The application can be configured in two ways:
+1. **Interactive Command-Line Mode**: Answer prompts when running the application
+2. **YAML Configuration File**: Create a `config.yml` file for automated backups
+
+### YAML Configuration
+
+When you first run the application, it will create a `config.yml` file in the same directory if it doesn't exist. You can then modify this file with your preferred settings.
+
+#### Configuration Options
+
+```yaml
+# MongoDB Configuration
+mongo:
+  enable: false  # Set to true to enable MongoDB backup
+  uri: "mongodb://localhost:27017"  # MongoDB connection URI
+  database-names: # Database names to back up
+    - "MRDatabase"
+  threads: 4  # Number of threads to use for operations
+  path: "backup.gz"  # Default backup file path
+  interval: 60  # Backup interval in minutes
+
+# MySQL Configuration
+mysql:
+  enable: false  # Set to true to enable MySQL backup
+  host: "localhost"  # MySQL host
+  port: 3306  # MySQL port
+  database-names: # Database names to back up
+    - "MRDatabase"
+  username: "root"  # MySQL username
+  password: ""  # MySQL password
+  threads: 4  # Number of threads to use for operations
+  path: "backup.sql"  # Default backup file path
+  interval: 60  # Backup interval in minutes
+```
+
+### Running with Configuration
+
+1. **Interactive Mode**: Run the application without arguments and follow the prompts
+   ```bash
+   java -jar DatabaseCloner-1.0.0.jar
+   ```
+
+2. **Using Config File**:
+   - Run the application with the config file:
+        ```bash
+        java -jar DatabaseCloner-1.0.0.jar
+        ```
+   - The application will automatically detect and use the `config.yml` file
+
+### Security Note
+
+- The configuration file may contain sensitive information like database credentials
+- Keep the `config.yml` file secure and never commit it to version control
+- The `.gitignore` file already includes `config.yml` to prevent accidental commits
 
 ## Building from Source
 
