@@ -1,4 +1,4 @@
-package ir.mrstudios.databasecloner;
+package ir.mrstudios.databasecloner.structure;
 
 import com.mongodb.client.*;
 import org.bson.RawBsonDocument;

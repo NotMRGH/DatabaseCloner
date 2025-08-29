@@ -3,6 +3,8 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 backup.gz
+dependency-reduced-pom.xml
+backup.sql
 
 ### IntelliJ IDEA ###
 .idea
