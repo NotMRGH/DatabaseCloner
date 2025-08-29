@@ -5,6 +5,7 @@ target/
 backup.gz
 dependency-reduced-pom.xml
 backup.sql
+config.yml
 
 ### IntelliJ IDEA ###
 .idea

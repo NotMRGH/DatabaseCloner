@@ -1,8 +1,9 @@
 package ir.mrstudios.databasecloner.cloner;
 
-import ir.mrstudios.databasecloner.structure.MongoBackupRestore;
+import ir.mrstudios.databasecloner.models.MongoBackupRestore;
 
 import java.util.Scanner;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -15,7 +16,7 @@ public class MongoCloner {
     private void start() {
         final Scanner scanner = new Scanner(System.in);
 
-        System.out.println("=== Database Cloner ===");
+        System.out.println("=== Mongo Database Cloner ===");
         System.out.println("1️⃣ Backup Database");
         System.out.println("2️⃣ Restore Database");
         System.out.print("👉 Select option (1 or 2): ");
@@ -49,7 +50,9 @@ public class MongoCloner {
         System.out.print("🗑️ Drop existing collections before restore? (yes/no): ");
         final boolean dropExisting = scanner.nextLine().trim().equalsIgnoreCase("yes");
 
-        final MongoBackupRestore backupRestore = new MongoBackupRestore(uri, dbName, threads);
+        final ExecutorService executor = Executors.newFixedThreadPool(threads);
+
+        final MongoBackupRestore backupRestore = new MongoBackupRestore(uri, dbName, executor);
 
         try {
             backupRestore.restore(backupPath, dropExisting);
@@ -79,12 +82,17 @@ public class MongoCloner {
         System.out.print("⏰ Enter interval in minutes for backup (enter 0 for one-time backup): ");
         final int intervalMinutes = Integer.parseInt(scanner.nextLine());
 
-        final MongoBackupRestore backupRestore = new MongoBackupRestore(uri, dbName, threads);
+        final ExecutorService executor = Executors.newFixedThreadPool(threads);
+
+        final MongoBackupRestore backupRestore = new MongoBackupRestore(uri, dbName, executor);
 
         if (intervalMinutes > 0) {
             Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
                 try {
-                    backupRestore.backup(outputPath);
+                    final String fileName = outputPath.replace(".gz", "")
+                                            + "-" + System.currentTimeMillis() + ".gz";
+
+                    backupRestore.backup(fileName);
                 } catch (Exception e) {
                     System.err.println("❌ Backup failed: " + e.getMessage());
                 }
@@ -97,7 +105,10 @@ public class MongoCloner {
         }
 
         try {
-            backupRestore.backup(outputPath);
+            final String fileName = outputPath.replace(".gz", "")
+                                    + "-" + System.currentTimeMillis() + ".gz";
+
+            backupRestore.backup(fileName);
         } catch (Exception e) {
             System.err.println("❌ Backup failed: " + e.getMessage());
         } finally {

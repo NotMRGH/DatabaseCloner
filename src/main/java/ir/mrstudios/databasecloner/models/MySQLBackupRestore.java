@@ -1,4 +1,4 @@
-package ir.mrstudios.databasecloner.structure;
+package ir.mrstudios.databasecloner.models;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -19,13 +19,21 @@ public class MySQLBackupRestore {
     private final ExecutorService executor;
     private final Lock fileLock = new ReentrantLock();
 
-    public MySQLBackupRestore(String host, int port, String database, String user, String password, int threadPoolSize) {
+    public MySQLBackupRestore(
+            String host,
+            int port,
+            String database,
+            String username,
+            String password,
+            int threadPoolSize,
+            ExecutorService executor
+    ) {
         final HikariConfig config = new HikariConfig();
         config.setJdbcUrl(
                 "jdbc:mysql://" + host + ":" + port + "/" + database +
                 "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
         );
-        config.setUsername(user);
+        config.setUsername(username);
         config.setPassword(password);
         config.setMaximumPoolSize(threadPoolSize + 2);
         config.setMinimumIdle(2);
@@ -35,7 +43,7 @@ public class MySQLBackupRestore {
         config.setLeakDetectionThreshold(60000);
 
         this.dataSource = new HikariDataSource(config);
-        this.executor = Executors.newFixedThreadPool(threadPoolSize);
+        this.executor = executor;
     }
 
     public void backup(String filePath) throws SQLException, IOException {

@@ -1,11 +1,14 @@
-package ir.mrstudios.databasecloner.structure;
+package ir.mrstudios.databasecloner.models;
 
 import com.mongodb.client.*;
 import org.bson.RawBsonDocument;
 
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -20,10 +23,10 @@ public class MongoBackupRestore {
     private static final byte[] COLLECTION_SEPARATOR = "##COLLECTION##".getBytes();
     private static final byte[] END_COLLECTION = "##END##".getBytes();
 
-    public MongoBackupRestore(String connectionUri, String databaseName, int threadPoolSize) {
+    public MongoBackupRestore(String connectionUri, String databaseName, ExecutorService executor) {
         this.connectionUri = connectionUri;
         this.databaseName = databaseName;
-        this.executor = Executors.newFixedThreadPool(threadPoolSize);
+        this.executor = executor;
     }
 
     public void backup(String outputPath) throws Exception {

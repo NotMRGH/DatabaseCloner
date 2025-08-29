@@ -1,0 +1,20 @@
+mongo:
+  enable: false
+  uri: "mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.2.15"
+  database-names:
+    - "MRDatabase"
+  threads: 5
+  path: "backup-%name%.gz"
+  interval: 1440 #minute
+
+mysql:
+  enable: false
+  host: "localhost"
+  port: 3306
+  database-names:
+    - "MRDatabase"
+  username: "root"
+  password: ""
+  threads: 5
+  path: "backup-%name%.sql"
+  interval: 1440 #minute

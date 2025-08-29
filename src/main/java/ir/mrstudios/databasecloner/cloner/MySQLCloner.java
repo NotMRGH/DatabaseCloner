@@ -1,8 +1,9 @@
 package ir.mrstudios.databasecloner.cloner;
 
-import ir.mrstudios.databasecloner.structure.MySQLBackupRestore;
+import ir.mrstudios.databasecloner.models.MySQLBackupRestore;
 
 import java.util.Scanner;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -40,20 +41,26 @@ public class MySQLCloner {
         System.out.print("⏰ Enter interval in minutes for backup (enter 0 for one-time backup): ");
         final int intervalMinutes = Integer.parseInt(scanner.nextLine());
 
+        final ExecutorService executor = Executors.newFixedThreadPool(threads);
+
         final MySQLBackupRestore backupRestore = new MySQLBackupRestore(
                 host,
                 port,
                 dbName,
                 user,
                 pass,
-                threads
+                threads,
+                executor
         );
 
         if (intervalMinutes > 0) {
             Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
                 try {
+                    final String fileName = outputPath.replace(".sql", "")
+                                            + "-" + System.currentTimeMillis() + ".sql";
+
                     backupRestore.testConnection();
-                    backupRestore.backup(outputPath);
+                    backupRestore.backup(fileName);
                 } catch (Exception e) {
                     System.err.println("❌ Backup failed: " + e.getMessage());
                 }
@@ -66,8 +73,11 @@ public class MySQLCloner {
         }
 
         try {
+            final String fileName = outputPath.replace(".sql", "")
+                                    + "-" + System.currentTimeMillis() + ".sql";
+
             backupRestore.testConnection();
-            backupRestore.backup(outputPath);
+            backupRestore.backup(fileName);
         } catch (Exception e) {
             System.err.println("❌ Backup failed: " + e.getMessage());
         } finally {
