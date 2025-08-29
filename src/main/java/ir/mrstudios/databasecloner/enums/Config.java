@@ -6,6 +6,18 @@ import lombok.SneakyThrows;
 
 public enum Config {
 
+    //SOCKS5
+    SOCKS5_ENABLE("socks5.enable"),
+    SOCKS5_HOST("socks5.host"),
+    SOCKS5_PORT("socks5.port"),
+    SOCKS5_USERNAME("socks5.username"),
+    SOCKS5_PASSWORD("socks5.password"),
+
+    //TELEGRAM
+    TELEGRAM_ENABLE("telegram.enable"),
+    TELEGRAM_TOKEN("telegram.token"),
+    TELEGRAM_USER_ID("telegram.user-id"),
+
     //MONGO
     MONGO_ENABLE("mongo.enable"),
     MONGO_URI("mongo.uri"),
@@ -21,7 +33,12 @@ public enum Config {
     MYSQL_PASSWORD("mysql.password"),
     MYSQL_THREADS("mysql.threads"),
     MYSQL_PATH("mysql.path"),
-    MYSQL_INTERVAL("mysql.interval");
+    MYSQL_INTERVAL("mysql.interval"),
+
+    //SQLITE
+    SQLITE_ENABLE("sqlite.enable"),
+    SQLITE_PATH("sqlite.path"),
+    SQLITE_INTERVAL("sqlite.interval");
 
     private Object value;
     private final String path;

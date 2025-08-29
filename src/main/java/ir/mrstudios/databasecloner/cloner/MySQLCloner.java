@@ -1,11 +1,11 @@
 package ir.mrstudios.databasecloner.cloner;
 
 import ir.mrstudios.databasecloner.models.MySQLBackupRestore;
+import ir.mrstudios.databasecloner.utils.StringUtil;
 
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 public class MySQLCloner {
 
@@ -38,9 +38,6 @@ public class MySQLCloner {
         System.out.print("💾 Enter Backup Output File Path (e.g. backup.sql): ");
         final String outputPath = scanner.nextLine();
 
-        System.out.print("⏰ Enter interval in minutes for backup (enter 0 for one-time backup): ");
-        final int intervalMinutes = Integer.parseInt(scanner.nextLine());
-
         final ExecutorService executor = Executors.newFixedThreadPool(threads);
 
         final MySQLBackupRestore backupRestore = new MySQLBackupRestore(
@@ -53,28 +50,9 @@ public class MySQLCloner {
                 executor
         );
 
-        if (intervalMinutes > 0) {
-            Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
-                try {
-                    final String fileName = outputPath.replace(".sql", "")
-                                            + "-" + System.currentTimeMillis() + ".sql";
-
-                    backupRestore.testConnection();
-                    backupRestore.backup(fileName);
-                } catch (Exception e) {
-                    System.err.println("❌ Backup failed: " + e.getMessage());
-                }
-            }, 0, intervalMinutes, TimeUnit.MINUTES);
-            System.out.println(
-                    "✅ Auto-backup started. Every " + intervalMinutes + " minutes a backup will be created."
-            );
-            System.out.println("Press CTRL+C to stop.");
-            return;
-        }
-
         try {
             final String fileName = outputPath.replace(".sql", "")
-                                    + "-" + System.currentTimeMillis() + ".sql";
+                                    + "-" + StringUtil.timeNow() + ".sql";
 
             backupRestore.testConnection();
             backupRestore.backup(fileName);

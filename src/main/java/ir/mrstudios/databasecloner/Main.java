@@ -4,10 +4,16 @@ import ir.mrstudios.databasecloner.cloner.MongoCloner;
 import ir.mrstudios.databasecloner.cloner.MySQLCloner;
 import ir.mrstudios.databasecloner.enums.Config;
 import ir.mrstudios.databasecloner.managers.ConfigManager;
+import ir.mrstudios.databasecloner.managers.TelegramManager;
 import ir.mrstudios.databasecloner.models.MongoBackupRestore;
 import ir.mrstudios.databasecloner.models.MySQLBackupRestore;
+import ir.mrstudios.databasecloner.utils.StringUtil;
 import lombok.Getter;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -20,6 +26,7 @@ public class Main {
     private static Main instance;
 
     private final ConfigManager configManager;
+    private final TelegramManager telegramManager;
 
     public static void main(String[] args) {
         final Scanner scanner = new Scanner(System.in);
@@ -43,6 +50,41 @@ public class Main {
     public Main() {
         instance = this;
         this.configManager = new ConfigManager();
+        this.telegramManager = new TelegramManager();
+
+        if (Config.SQLITE_ENABLE.getAs(Boolean.class)) {
+            final int intervalMinutes = Config.SQLITE_INTERVAL.getAs(Integer.class);
+            final String outputPath = Config.SQLITE_PATH.getAs(String.class);
+
+            for (String path : this.configManager.getSettingsYaml().getStringList("sqlite.from-paths")) {
+
+                Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
+                    final File sourceFile = new File(path);
+                    if (!sourceFile.exists()) {
+                        System.out.println("❌ File does not exist.");
+                        return;
+                    }
+
+                    final String[] split = sourceFile.getName().split("\\.");
+                    final String fileExtension = split[split.length - 1];
+                    final String fileName = outputPath + File.separator + sourceFile.getName()
+                            .replace("." + fileExtension,
+                                    "-" + StringUtil.timeNow() + "." + fileExtension
+                            );
+
+                    final File copiedFile = new File(fileName);
+                    copiedFile.getParentFile().mkdirs();
+
+                    try {
+                        Files.copy(sourceFile.toPath(), copiedFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    } catch (IOException e) {
+                        System.err.println("❌ Backup failed: " + e.getMessage());
+                    }
+
+                    this.telegramManager.sendBackup(copiedFile);
+                }, 0, intervalMinutes, TimeUnit.MINUTES);
+            }
+        }
 
         if (Config.MONGO_ENABLE.getAs(Boolean.class)) {
             final String uri = Config.MONGO_URI.getAs(String.class);
@@ -54,16 +96,18 @@ public class Main {
             for (String dbName : this.configManager.getSettingsYaml().getStringList("mongo.database-names")) {
                 final MongoBackupRestore backupRestore = new MongoBackupRestore(uri, dbName, executor);
 
-
                 Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
-                    final String fileName = outputPath.replace(".gz", "")
-                                            + "-" + System.currentTimeMillis() + ".gz";
-
+                    final String fileName = outputPath.replace("%name%", dbName)
+                                                    .replace(".gz", "")
+                                            + "-" + StringUtil.timeNow() + ".gz";
                     try {
-                        backupRestore.backup(fileName.replaceAll("%name%", dbName));
+
+                        backupRestore.backup(fileName);
                     } catch (Exception e) {
                         System.err.println("❌ Backup failed: " + e.getMessage());
                     }
+
+                    this.telegramManager.sendBackup(new File(fileName));
                 }, 0, intervalMinutes, TimeUnit.MINUTES);
             }
 
@@ -95,15 +139,18 @@ public class Main {
                 );
 
                 Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
+                    final String fileName = outputPath.replace("%name%", dbName)
+                                                    .replace(".sql", "")
+                                            + "-" + StringUtil.timeNow() + ".sql";
                     try {
-                        final String fileName = outputPath.replace(".sql", "")
-                                                + "-" + System.currentTimeMillis() + ".sql";
 
                         backupRestore.testConnection();
-                        backupRestore.backup(fileName.replaceAll("%name%", dbName));
+                        backupRestore.backup(fileName);
                     } catch (Exception e) {
                         System.err.println("❌ Backup failed: " + e.getMessage());
                     }
+
+                    this.telegramManager.sendBackup(new File(fileName));
                 }, 0, intervalMinutes, TimeUnit.MINUTES);
             }
 

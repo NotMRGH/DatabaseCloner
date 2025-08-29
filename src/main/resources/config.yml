@@ -1,3 +1,8 @@
+telegram:
+  enable: false
+  token: "PUT_YOUR_BOT_TOKEN_HERE"
+  user-id: 123456789
+
 mongo:
   enable: false
   uri: "mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.2.15"
@@ -18,3 +23,17 @@ mysql:
   threads: 5
   path: "backup-%name%.sql"
   interval: 1440 #minute
+
+sqlite:
+  enable: false
+  from-paths:
+    - "/etc/lib/sqlite.db"
+  path: "/root/backups"
+  interval: 1440 #minute
+
+socks5:
+  enable: false
+  host: "127.0.0.1"
+  port: "10808"
+  username: ""
+  password: ""

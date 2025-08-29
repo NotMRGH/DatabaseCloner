@@ -1,6 +1,6 @@
 # Database Cloner
 
-A Java-based database backup and restore utility that supports both MongoDB and MySQL. Easily create scheduled backups and restore databases with multi-threading support.
+A Java-based database backup and restore utility that supports MongoDB, MySQL, and SQLite. Easily create scheduled backups, restore databases with multi-threading support, and receive backups via Telegram with SOCKS5 proxy support.
 
 ## Features
 
@@ -9,6 +9,9 @@ A Java-based database backup and restore utility that supports both MongoDB and 
 - ⏰ **Scheduled** automated backups
 - 🔄 **Seamless** database restoration
 - 🔒 **Secure** handling of database credentials
+- 📱 **Telegram** notifications with backup file delivery
+- 🔄 **SOCKS5** proxy support for Telegram
+- 🗃️ **SQLite** database support
 - 🧩 **Lightweight** and easy to integrate
 
 ## Prerequisites
@@ -16,7 +19,10 @@ A Java-based database backup and restore utility that supports both MongoDB and 
 - Java 17 or higher
 - MongoDB (local or remote instance) for MongoDB operations
 - MySQL Server for MySQL operations
+- SQLite
 - Maven (for building from source)
+- Telegram Bot Token (optional, for Telegram notifications)
+- SOCKS5 proxy (optional, for Telegram in restricted networks)
 
 ## Installation
 
@@ -48,7 +54,6 @@ A Java-based database backup and restore utility that supports both MongoDB and 
 4. Specify the database name
 5. Set the thread pool size (recommended: 4-8 for most systems)
 6. Provide the output file path (e.g., `mongo_backup.gz`)
-7. Set the backup interval in minutes (0 for one-time backup)
 
 Example:
 ```
@@ -65,7 +70,6 @@ Example:
 📂 Enter Database Name: mydatabase
 ⚙️ Enter Thread Pool Size: 4
 💾 Enter Backup Output File Path (e.g. mongo_backup.gz): mybackup.gz
-⏰ Enter interval in minutes for backup (enter 0 for one-time backup): 60
 ```
 
 #### Restore a MongoDB Database
@@ -107,7 +111,6 @@ Example:
 5. Enter MySQL username and password
 6. Set the thread pool size (recommended: 4-8 for most systems)
 7. Provide the output file path (e.g., `mysql_backup.sql`)
-8. Set the backup interval in minutes (0 for one-time backup)
 
 Example:
 ```
@@ -124,7 +127,6 @@ Example:
 🔑 Enter MySQL Password: ********
 ⚙️ Enter Thread Pool Size: 4
 💾 Enter Output File Path (e.g. backup.sql): mysql_backup.sql
-⏰ Enter interval in minutes for backup (enter 0 for one-time backup): 0
 ```
 
 ## Configuration
@@ -140,6 +142,20 @@ When you first run the application, it will create a `config.yml` file in the sa
 #### Configuration Options
 
 ```yaml
+# SOCKS5 Proxy Configuration (for Telegram)
+socks5:
+  enable: false  # Enable/disable SOCKS5 proxy
+  host: "127.0.0.1"  # SOCKS5 proxy host
+  port: 10808     # SOCKS5 proxy port
+  username: ""   # SOCKS5 username (if required)
+  password: ""   # SOCKS5 password (if required)
+
+# Telegram Configuration
+telegram:
+  enable: false      # Enable/disable Telegram notifications
+  token: "PUT_YOUR_BOT_TOKEN_HERE"  # Telegram Bot Token
+  user-id: 123456789  # Your Telegram User ID
+
 # MongoDB Configuration
 mongo:
   enable: false  # Set to true to enable MongoDB backup
@@ -162,6 +178,14 @@ mysql:
   threads: 4  # Number of threads to use for operations
   path: "backup.sql"  # Default backup file path
   interval: 60  # Backup interval in minutes
+
+# SQLite Configuration
+sqlite:
+  enable: false  # Set to true to enable SQLite backup
+  from-paths:
+     - "/etc/lib/sqlite.db"
+  path: "/root/backups"  # Path to SQLite database file
+  interval: 60   # Backup interval in minutes
 ```
 
 ### Running with Configuration
@@ -170,19 +194,34 @@ mysql:
    ```bash
    java -jar DatabaseCloner-1.0.0.jar
    ```
+   Then select option 2 to run from command-line and follow the prompts
 
 2. **Using Config File**:
-   - Run the application with the config file:
-        ```bash
-        java -jar DatabaseCloner-1.0.0.jar
-        ```
+   - Configure your `config.yml` file with the desired settings
+   - Run the application:
+     ```bash
+     java -jar DatabaseCloner-1.0.0.jar
+     ```
+   - Select option 1 to run from config
    - The application will automatically detect and use the `config.yml` file
+
+## Telegram Integration
+
+To receive backups via Telegram:
+
+1. Create a new bot using [@BotFather](https://t.me/botfather) on Telegram
+2. Copy your bot token
+3. Get your Telegram User ID (you can use [@userinfobot](https://t.me/userinfobot))
+4. Enable Telegram in the config file and add your token and user ID
+5. (Optional) Configure SOCKS5 proxy if you're in a restricted network
 
 ### Security Note
 
-- The configuration file may contain sensitive information like database credentials
+- The configuration file may contain sensitive information like database credentials and Telegram tokens
 - Keep the `config.yml` file secure and never commit it to version control
 - The `.gitignore` file already includes `config.yml` to prevent accidental commits
+- When using Telegram, ensure your bot is private and only accessible by authorized users
+- For SOCKS5 proxy, consider using authentication for additional security
 
 ## Building from Source
 
