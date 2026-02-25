@@ -72,6 +72,7 @@ public class TelegramManager {
             return;
         }
 
+        file.delete();
         System.out.println("✅ Backup sent successfully.");
     }
 }
