@@ -6,7 +6,7 @@
 
     <groupId>ir.mrstudios</groupId>
     <artifactId>DatabaseCloner</artifactId>
-    <version>4.1.3</version>
+    <version>4.1.4</version>
 
     <build>
         <plugins>
