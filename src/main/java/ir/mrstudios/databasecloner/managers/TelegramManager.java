@@ -33,13 +33,10 @@ public class TelegramManager {
                 Authenticator.setDefault(new Authenticator() {
                     @Override
                     protected PasswordAuthentication getPasswordAuthentication() {
-                        if (this.getRequestorType() == RequestorType.PROXY) {
-                            return new PasswordAuthentication(
-                                    Config.SOCKS5_USERNAME.getAs(String.class),
-                                    Config.SOCKS5_PASSWORD.getAs(String.class).toCharArray()
-                            );
-                        }
-                        return null;
+                        return new PasswordAuthentication(
+                                Config.SOCKS5_USERNAME.getAs(String.class),
+                                Config.SOCKS5_PASSWORD.getAs(String.class).toCharArray()
+                        );
                     }
                 });
             }
